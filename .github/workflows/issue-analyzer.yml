@@ -1,0 +1,76 @@
+name: Issue Analyzer — Claude
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+jobs:
+  analyze-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Analizar issue con Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--allowed-tools 'Bash(gh issue *)' 'Bash(gh label *)'"
+          direct_prompt: |
+            Eres un analizador automático de issues para el repositorio claude-tetris.
+            El proyecto es un juego Tetris implementado en JavaScript vanilla (sin frameworks, sin dependencias).
+            Archivos clave: game.js (toda la lógica del juego, ~305 líneas), index.html (canvas 300×600 px), style.css (tema oscuro/retro).
+            Componentes principales: board (tablero), pieces (piezas I/O/T/S/Z/J/L), scoring (puntuación/nivel/líneas), rendering (Canvas 2D), controls (teclado).
+
+            Issue #${{ github.event.issue.number }}
+            Título: ${{ github.event.issue.title }}
+            Autor: ${{ github.event.issue.user.login }}
+            Cuerpo:
+            ${{ github.event.issue.body }}
+
+            PASOS OBLIGATORIOS — ejecuta en este orden:
+
+            PASO 1: Crea los labels del proyecto si no existen aún:
+            gh label create "bug" --color "d73a4a" --description "Algo no funciona correctamente" --repo ${{ github.repository }} --force
+            gh label create "enhancement" --color "a2eeef" --description "Nueva funcionalidad o mejora" --repo ${{ github.repository }} --force
+            gh label create "game-mechanics" --color "e4e669" --description "Piezas, rotación, colisión, gravedad" --repo ${{ github.repository }} --force
+            gh label create "ui" --color "0075ca" --description "Visual, colores, canvas, estilos" --repo ${{ github.repository }} --force
+            gh label create "performance" --color "f9d0c4" --description "Velocidad, FPS, loop de juego" --repo ${{ github.repository }} --force
+            gh label create "scoring" --color "c5def5" --description "Puntuación, niveles, líneas" --repo ${{ github.repository }} --force
+            gh label create "controls" --color "bfd4f2" --description "Teclado, input, atajos de teclado" --repo ${{ github.repository }} --force
+            gh label create "documentation" --color "0052cc" --description "CLAUDE.md, README, comentarios" --repo ${{ github.repository }} --force
+            gh label create "question" --color "d876e3" --description "Pregunta sobre el código o mecánicas" --repo ${{ github.repository }} --force
+
+            PASO 2: Analiza el issue y asigna los labels más apropiados (uno o más):
+            gh issue edit ${{ github.event.issue.number }} --add-label "LABEL1,LABEL2" --repo ${{ github.repository }}
+
+            PASO 3: Publica un comentario en español con el diagnóstico completo usando este formato:
+
+            ## 🔍 Análisis del Issue — Claude
+
+            **Tipo:** [Bug / Enhancement / Pregunta / Documentación / otro]
+            **Componentes afectados:** [board / pieces / scoring / rendering / controls / style / otro]
+
+            ### Diagnóstico
+            [Descripción clara del problema o solicitud basada únicamente en el título y cuerpo del issue]
+
+            ### Enfoque sugerido
+            [Estrategia de solución a alto nivel — qué cambiar y cómo abordarlo]
+
+            ### Notas de implementación
+            [Funciones o secciones relevantes de game.js / index.html / style.css que deberían modificarse, con referencias concretas si es posible]
+
+            ### Estimación de complejidad
+            [Baja / Media / Alta — con una breve justificación]
+
+            ---
+            *Análisis generado automáticamente por Claude. Basado exclusivamente en la información del issue.*
+
+            Basa todo el análisis únicamente en el título y cuerpo del issue. No hagas suposiciones sobre información no provista.
