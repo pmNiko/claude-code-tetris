@@ -4,16 +4,15 @@ on:
   issues:
     types: [opened, edited]
 
-permissions:
-  contents: read
-  issues: write
-  id-token: write
-
 jobs:
   analyze-issue:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -22,55 +21,78 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: '--allowed-tools Bash(gh issue *) Bash(gh label *)'
+          claude_args: '--allowed-tools Bash(gh issue *) Bash(gh label *) Bash(cat *) Bash(printf *)'
           prompt: |
-            Eres un analizador automático de issues para el repositorio claude-tetris.
-            El proyecto es un juego Tetris implementado en JavaScript vanilla (sin frameworks, sin dependencias).
-            Archivos clave: game.js (toda la lógica del juego, ~305 líneas), index.html (canvas 300×600 px), style.css (tema oscuro/retro).
-            Componentes principales: board (tablero), pieces (piezas I/O/T/S/Z/J/L), scoring (puntuación/nivel/líneas), rendering (Canvas 2D), controls (teclado).
+            You are an automated issue analyzer for the claude-tetris repository.
+            The project is a Tetris game in vanilla JavaScript (no frameworks, no dependencies).
+            Key files: game.js (all game logic, ~305 lines), index.html (300×600 px canvas), style.css (dark/retro theme).
+            Main components: board, pieces (I/O/T/S/Z/J/L), scoring, rendering (Canvas 2D), controls (keyboard).
 
-            Issue #${{ github.event.issue.number }}
-            Título: ${{ github.event.issue.title }}
-            Autor: ${{ github.event.issue.user.login }}
-            Cuerpo:
-            ${{ github.event.issue.body }}
+            An issue was just ${{ github.event.action }}:
+            - Issue number: #${{ github.event.issue.number }}
+            - Title: ${{ github.event.issue.title }}
+            - Author: @${{ github.event.issue.user.login }}
+            - Body: ${{ github.event.issue.body }}
 
-            PASOS OBLIGATORIOS — ejecuta en este orden:
+            STEP 1 — Create project labels if they don't exist yet (--force skips error if already exists):
+            gh label create "bug" --color "d73a4a" --description "Something is broken or behaving incorrectly" --repo ${{ github.repository }} --force
+            gh label create "enhancement" --color "a2eeef" --description "New feature or improvement request" --repo ${{ github.repository }} --force
+            gh label create "question" --color "d876e3" --description "Asking for help or clarification" --repo ${{ github.repository }} --force
+            gh label create "documentation" --color "0052cc" --description "CLAUDE.md, README, comments" --repo ${{ github.repository }} --force
+            gh label create "good first issue" --color "7057ff" --description "Simple, beginner-friendly task" --repo ${{ github.repository }} --force
+            gh label create "duplicate" --color "cfd3d7" --description "Already reported or known issue" --repo ${{ github.repository }} --force
+            gh label create "game-mechanics" --color "e4e669" --description "Pieces, rotation, collision, gravity" --repo ${{ github.repository }} --force
+            gh label create "ui" --color "0075ca" --description "Visuals, colors, canvas, styles" --repo ${{ github.repository }} --force
+            gh label create "performance" --color "f9d0c4" --description "Speed, FPS, game loop" --repo ${{ github.repository }} --force
+            gh label create "scoring" --color "c5def5" --description "Score, levels, lines" --repo ${{ github.repository }} --force
+            gh label create "controls" --color "bfd4f2" --description "Keyboard input, shortcuts" --repo ${{ github.repository }} --force
 
-            PASO 1: Crea los labels del proyecto si no existen aún:
-            gh label create "bug" --color "d73a4a" --description "Algo no funciona correctamente" --repo ${{ github.repository }} --force
-            gh label create "enhancement" --color "a2eeef" --description "Nueva funcionalidad o mejora" --repo ${{ github.repository }} --force
-            gh label create "game-mechanics" --color "e4e669" --description "Piezas, rotación, colisión, gravedad" --repo ${{ github.repository }} --force
-            gh label create "ui" --color "0075ca" --description "Visual, colores, canvas, estilos" --repo ${{ github.repository }} --force
-            gh label create "performance" --color "f9d0c4" --description "Velocidad, FPS, loop de juego" --repo ${{ github.repository }} --force
-            gh label create "scoring" --color "c5def5" --description "Puntuación, niveles, líneas" --repo ${{ github.repository }} --force
-            gh label create "controls" --color "bfd4f2" --description "Teclado, input, atajos de teclado" --repo ${{ github.repository }} --force
-            gh label create "documentation" --color "0052cc" --description "CLAUDE.md, README, comentarios" --repo ${{ github.repository }} --force
-            gh label create "question" --color "d876e3" --description "Pregunta sobre el código o mecánicas" --repo ${{ github.repository }} --force
-
-            PASO 2: Analiza el issue y asigna los labels más apropiados (uno o más):
+            STEP 2 — Add the most appropriate labels (one or more) based on the issue content:
             gh issue edit ${{ github.event.issue.number }} --add-label "LABEL1,LABEL2" --repo ${{ github.repository }}
 
-            PASO 3: Publica un comentario en español con el diagnóstico completo usando este formato:
+            STEP 3 — Write the diagnosis to a temp file and post it using --body-file (required for proper Markdown rendering):
+
+            Write your analysis to /tmp/diagnosis.md using printf with the following GitHub-Flavored Markdown structure.
+            Replace every placeholder in [brackets] with real content based on the issue. Do NOT leave any placeholder as-is.
+
+            The file must follow this exact structure:
 
             ## 🔍 Análisis del Issue — Claude
 
-            **Tipo:** [Bug / Enhancement / Pregunta / Documentación / otro]
-            **Componentes afectados:** [board / pieces / scoring / rendering / controls / style / otro]
+            | Campo | Detalle |
+            |---|---|
+            | **Tipo** | Bug / Enhancement / Pregunta / Documentación |
+            | **Acción** | ${{ github.event.action }} |
+            | **Componentes** | `board` / `pieces` / `scoring` / `rendering` / `controls` / `style` |
 
-            ### Diagnóstico
-            [Descripción clara del problema o solicitud basada únicamente en el título y cuerpo del issue]
+            ### 📋 Diagnóstico
 
-            ### Enfoque sugerido
-            [Estrategia de solución a alto nivel — qué cambiar y cómo abordarlo]
+            > [Resumen del problema en 1-2 oraciones claras]
 
-            ### Notas de implementación
-            [Funciones o secciones relevantes de game.js / index.html / style.css que deberían modificarse, con referencias concretas si es posible]
+            [Descripción completa del problema o solicitud basada en el título y cuerpo del issue]
 
-            ### Estimación de complejidad
-            [Baja / Media / Alta — con una breve justificación]
+            ### 💡 Enfoque sugerido
+
+            [Estrategia de solución a alto nivel]
+
+            ### 🛠️ Notas de implementación
+
+            Archivos y funciones relevantes a modificar:
+
+            - [ ] `game.js` — [función o sección específica si aplica]
+            - [ ] `index.html` — [elemento o sección si aplica]
+            - [ ] `style.css` — [regla o selector si aplica]
+
+            ### 📊 Estimación de complejidad
+
+            **[Baja / Media / Alta]** — [justificación breve]
 
             ---
-            *Análisis generado automáticamente por Claude. Basado exclusivamente en la información del issue.*
 
-            Basa todo el análisis únicamente en el título y cuerpo del issue. No hagas suposiciones sobre información no provista.
+            *Gracias por reportar esto, @${{ github.event.issue.user.login }}! 🎮*
+            *Análisis generado automáticamente por [Claude](https://claude.ai).*
+
+            Then post it with:
+            gh issue comment ${{ github.event.issue.number }} --body-file /tmp/diagnosis.md --repo ${{ github.repository }}
+
+            Base your entire analysis only on the issue title and body. Do not assume information not provided.
