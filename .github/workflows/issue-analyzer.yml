@@ -22,8 +22,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowed-tools 'Bash(gh issue *)' 'Bash(gh label *)'"
-          direct_prompt: |
+          claude_args: '--allowed-tools Bash(gh issue *) Bash(gh label *)'
+          prompt: |
             Eres un analizador automático de issues para el repositorio claude-tetris.
             El proyecto es un juego Tetris implementado en JavaScript vanilla (sin frameworks, sin dependencias).
             Archivos clave: game.js (toda la lógica del juego, ~305 líneas), index.html (canvas 300×600 px), style.css (tema oscuro/retro).
