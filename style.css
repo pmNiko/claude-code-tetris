@@ -167,6 +167,10 @@ kbd {
   display: none;
 }
 
+.overlay-box.hidden {
+  display: none;
+}
+
 .overlay-box {
   text-align: center;
   display: flex;
@@ -175,7 +179,7 @@ kbd {
   align-items: center;
 }
 
-#overlay-title {
+.overlay-title {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 4px;
@@ -205,6 +209,93 @@ kbd {
 
 #restart-btn:hover {
   background: var(--accent-hover);
+}
+
+/* ---- Pause menu buttons ---- */
+#pause-menu .overlay-title {
+  color: var(--accent);
+}
+
+#pause-menu button {
+  width: 200px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s, color 0.3s;
+}
+
+#pause-menu button:hover {
+  background: var(--accent-hover);
+}
+
+/* ---- Controls list inside pause menu ---- */
+#pause-controls {
+  width: 200px;
+  background: var(--canvas-bg);
+  border: 1px solid var(--canvas-border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+#pause-controls.hidden {
+  display: none;
+}
+
+#pause-controls ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#pause-controls li {
+  font-size: 12px;
+  color: var(--controls-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.3s;
+}
+
+/* ---- Level selector ---- */
+.level-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+  justify-content: space-between;
+}
+
+.level-selector label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--controls-text);
+  transition: color 0.3s;
+}
+
+.level-selector select {
+  background: var(--canvas-bg);
+  color: var(--text);
+  border: 1px solid var(--canvas-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.level-selector select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* ---- Theme toggle ---- */
@@ -395,4 +486,52 @@ kbd {
 #reset-records-btn:hover {
   color: #e57373;
   border-color: #e57373;
+}
+
+/* ---- Skin selector ---- */
+#skin-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.skin-btn {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  color: var(--kbd-text);
+  border-radius: 4px;
+  padding: 5px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.skin-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.skin-btn:hover:not(.active) {
+  background: var(--kbd-border);
+}
+
+/* Skin Neon: fondo negro puro en el canvas */
+body[data-skin="neon"] #board,
+body[data-skin="neon"] #next-canvas {
+  background: #000;
+  border-color: #333;
+}
+
+/* Skin Pastel: fondo suave */
+body[data-skin="pastel"] #board,
+body[data-skin="pastel"] #next-canvas {
+  background: #f5f0fa;
+}
+
+/* Skin Pixel: borde pixelado */
+body[data-skin="pixel"] #board {
+  image-rendering: pixelated;
 }
