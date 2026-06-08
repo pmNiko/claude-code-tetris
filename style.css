@@ -258,3 +258,51 @@ kbd {
   color: var(--panel-label);
   transition: color 0.3s;
 }
+
+/* ---- Skin selector ---- */
+#skin-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.skin-btn {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  color: var(--kbd-text);
+  border-radius: 4px;
+  padding: 5px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.skin-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.skin-btn:hover:not(.active) {
+  background: var(--kbd-border);
+}
+
+/* Skin Neon: fondo negro puro en el canvas */
+body[data-skin="neon"] #board,
+body[data-skin="neon"] #next-canvas {
+  background: #000;
+  border-color: #333;
+}
+
+/* Skin Pastel: fondo suave */
+body[data-skin="pastel"] #board,
+body[data-skin="pastel"] #next-canvas {
+  background: #f5f0fa;
+}
+
+/* Skin Pixel: borde pixelado */
+body[data-skin="pixel"] #board {
+  image-rendering: pixelated;
+}
